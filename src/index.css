@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@100..900&family=Geist:wght@100..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Sora", sans-serif;
+  --color-background: #050508;
+  --color-surface-dim: #050508;
+  --color-surface-bright: #12121a;
+  --color-surface-container-lowest: #020204;
+  --color-surface-container-low: #09090f;
+  --color-surface-container: #0e0e16;
+  --color-surface-container-high: #161622;
+  --color-surface-container-highest: #1e1e2e;
+  --color-on-surface: #e2e8f0;
+  --color-on-surface-variant: #94a3b8;
+  --color-primary: #6366f1;
+  --color-on-primary: #ffffff;
+  --color-secondary: #a855f7;
+  --color-on-secondary: #ffffff;
+  --color-tertiary: #a855f7;
+  --color-on-tertiary-container: #1e1b4b;
+}
+
+/* Custom interactive effects */
+.immersive-bg {
+  background: radial-gradient(circle at 50% -20%, #1e1b4b 0%, #050508 70%);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.accent-glow {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+.bloom-primary {
+  box-shadow: 0 0 24px rgba(99, 102, 241, 0.4);
+}
+
+.bloom-tertiary {
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

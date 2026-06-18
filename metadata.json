@@ -1,0 +1,6 @@
+{
+  "name": "Lumina AI",
+  "description": "Turn imagination into reality with digital alchemy. Generate ultra-high-definition visual matter from raw prompts in milliseconds.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
