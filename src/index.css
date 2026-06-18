@@ -2,29 +2,35 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Sora", sans-serif;
-  --color-background: #050508;
-  --color-surface-dim: #050508;
-  --color-surface-bright: #12121a;
-  --color-surface-container-lowest: #020204;
-  --color-surface-container-low: #09090f;
-  --color-surface-container: #0e0e16;
-  --color-surface-container-high: #161622;
-  --color-surface-container-highest: #1e1e2e;
-  --color-on-surface: #e2e8f0;
-  --color-on-surface-variant: #94a3b8;
-  --color-primary: #6366f1;
-  --color-on-primary: #ffffff;
-  --color-secondary: #a855f7;
-  --color-on-secondary: #ffffff;
-  --color-tertiary: #a855f7;
-  --color-on-tertiary-container: #1e1b4b;
+
+
+--font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+--font-display: "Space Grotesk", sans-serif;
+
+--color-background: #060807;
+--color-surface-container-lowest: #030403;
+--color-surface-container-low: #0a0d0a;
+--color-surface-container: #0e120f;
+--color-surface-container-high: #161d18;
+--color-surface-container-highest: #202a22;
+--color-on-surface: #d4e8d4;
+--color-on-surface-variant: #6b8a6f;
+--color-primary: #3fbf6a;
+--color-on-primary: #04140a;
+--color-secondary: #e8a33d;
+--color-on-secondary: #1a1003;
+--color-tertiary: #e8a33d;
+--color-on-tertiary-container: #2a1c05;
 }
 
-/* Custom interactive effects */
 .immersive-bg {
-  background: radial-gradient(circle at 50% -20%, #1e1b4b 0%, #050508 70%);
+  background-color: #060807;
+  background-image: radial-gradient(
+    ellipse at center,
+    #0a0d0a 0%,
+    #060807 55%,
+    #020302 100%
+  );
 }
 
 .glass-panel {
