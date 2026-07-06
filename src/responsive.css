@@ -1,0 +1,498 @@
+/* responsive.css
+   Import this file AFTER index.css:
+   import './index.css';
+   import './responsive.css';
+
+   This file only adds responsive overrides. It does not require changing App.tsx.
+*/
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+button,
+select,
+input {
+  max-width: 100%;
+}
+
+/* Smooth spacing for all screens */
+.immersive-bg > main {
+  width: min(100%, 1280px);
+  margin-inline: auto;
+}
+
+/* Navbar refinements */
+nav {
+  padding-top: env(safe-area-inset-top);
+}
+
+#nav-logo {
+  white-space: nowrap;
+  line-height: 1;
+}
+
+#nav-btn-started {
+  white-space: nowrap;
+}
+
+/* Hero typography scales cleanly from mobile to desktop */
+#welcome-header h1 {
+  font-size: clamp(2.45rem, 7vw, 4.5rem) !important;
+  line-height: 1.05 !important;
+  text-wrap: balance;
+}
+
+#welcome-header p {
+  font-size: clamp(0.95rem, 2.3vw, 1.125rem) !important;
+  line-height: 1.75;
+}
+
+/* Prompt form */
+form {
+  isolation: isolate;
+}
+
+form > div.relative {
+  width: 100%;
+}
+
+#prompt-input {
+  min-width: 0;
+}
+
+/* Main preview image keeps its aspect ratio without overflowing */
+#main-preview-image {
+  max-width: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+/* Render area wrapper: targets the div containing the preview card + sidebar */
+section:first-of-type div:has(> .accent-glow) {
+  align-items: stretch;
+}
+
+.accent-glow {
+  min-width: 0;
+}
+
+.accent-glow + div {
+  min-width: 0;
+}
+
+/* Better text wrapping inside cards/buttons */
+.glass-panel,
+.glass-panel * {
+  overflow-wrap: anywhere;
+}
+
+.glass-panel button,
+.glass-panel select,
+.glass-panel input {
+  overflow-wrap: normal;
+}
+
+/* Large desktops */
+@media (min-width: 1280px) {
+  .immersive-bg > main {
+    padding-inline: 6rem !important;
+    gap: 6rem !important;
+  }
+
+  section:first-of-type {
+    min-height: 74vh !important;
+  }
+
+  .accent-glow {
+    min-height: 460px !important;
+  }
+
+  #main-preview-image {
+    max-height: min(58vh, 560px) !important;
+  }
+}
+
+/* Standard laptops */
+@media (min-width: 1025px) and (max-width: 1279px) {
+  .immersive-bg > main {
+    padding-inline: 4rem !important;
+    gap: 5rem !important;
+  }
+
+  section:first-of-type {
+    min-height: 72vh !important;
+    gap: 2.5rem !important;
+  }
+
+  .accent-glow {
+    min-height: 430px !important;
+  }
+
+  #main-preview-image {
+    max-height: min(56vh, 520px) !important;
+  }
+
+  .accent-glow + div {
+    width: 19rem !important;
+  }
+}
+
+/* Tablets and small laptops */
+@media (max-width: 1024px) {
+  nav > div {
+    height: 4.5rem !important;
+    padding-inline: clamp(1rem, 4vw, 3rem) !important;
+  }
+
+  .immersive-bg > main {
+    padding-top: 5.5rem !important;
+    padding-inline: clamp(1rem, 4vw, 3rem) !important;
+    padding-bottom: 4rem !important;
+    gap: 4.5rem !important;
+  }
+
+  section:first-of-type {
+    min-height: auto !important;
+    margin-top: 2rem !important;
+    gap: 2.25rem !important;
+  }
+
+  #welcome-header {
+    gap: 1rem !important;
+  }
+
+  /* Force the prompt controls below the input on tablets for clean alignment */
+  form > div.relative {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+    padding: 0.75rem !important;
+  }
+
+  form > div.relative > div:first-child {
+    width: 100% !important;
+    padding-block: 0.65rem !important;
+  }
+
+  form > div.relative > div:last-child {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr auto;
+    align-items: stretch !important;
+    border-top: 1px solid rgba(255,255,255,0.06) !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0 !important;
+  }
+
+  form > div.relative > div:last-child > div,
+  form > div.relative > div:last-child > button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  form select {
+    width: 100% !important;
+  }
+
+  section:first-of-type div:has(> .accent-glow) {
+    flex-direction: column !important;
+  }
+
+  .accent-glow {
+    min-height: 390px !important;
+  }
+
+  .accent-glow + div {
+    width: 100% !important;
+  }
+
+  #main-preview-image {
+    max-height: min(55vh, 500px) !important;
+  }
+}
+
+/* Tablets only: keep sidebar content balanced */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .accent-glow + div {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem !important;
+  }
+
+  .accent-glow + div > div:first-child,
+  .accent-glow + div > div:nth-child(4),
+  .accent-glow + div > div:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .accent-glow + div > div:nth-child(4) {
+    max-height: 190px !important;
+  }
+}
+
+/* Mobile phones */
+@media (max-width: 767px) {
+  nav > div {
+    height: 4rem !important;
+    padding-inline: 1rem !important;
+  }
+
+  #nav-logo {
+    font-size: clamp(1.25rem, 5.7vw, 1.65rem) !important;
+    max-width: 58vw;
+  }
+
+  #nav-btn-started {
+    padding: 0.65rem 0.9rem !important;
+    font-size: 0.65rem !important;
+  }
+
+  .immersive-bg > main {
+    padding-top: 4.75rem !important;
+    padding-inline: 1rem !important;
+    padding-bottom: 3rem !important;
+    gap: 3.5rem !important;
+  }
+
+  section:first-of-type {
+    gap: 1.75rem !important;
+    margin-top: 1.25rem !important;
+  }
+
+  #welcome-header span {
+    font-size: 0.65rem !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  #welcome-header h1 {
+    font-size: clamp(2.25rem, 12vw, 3.2rem) !important;
+  }
+
+  #welcome-header p {
+    max-width: 34rem;
+  }
+
+  /* Info card */
+  #welcome-header + div,
+  .glass-panel.text-left.items-start {
+    border-radius: 1rem !important;
+  }
+
+  .glass-panel.text-left.items-start {
+    padding: 0.85rem !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Prompt form stacks perfectly on mobile */
+  form > div.relative {
+    border-radius: 1rem !important;
+  }
+
+  form > div.relative > div:first-child {
+    align-items: flex-start !important;
+  }
+
+  #prompt-input {
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+  }
+
+  form > div.relative > div:last-child {
+    grid-template-columns: 1fr !important;
+    gap: 0.6rem !important;
+  }
+
+  form > div.relative > div:last-child > button {
+    min-height: 2.75rem;
+  }
+
+  form > div.relative > div:last-child > div {
+    min-height: 2.65rem;
+  }
+
+  form select {
+    text-align: center;
+  }
+
+  .accent-glow {
+    min-height: 330px !important;
+    padding: 0.85rem !important;
+    border-radius: 1rem !important;
+  }
+
+  .accent-glow > div:first-child {
+    padding: 0.25rem !important;
+  }
+
+  #main-preview-image {
+    max-height: 48vh !important;
+    border-radius: 0.85rem !important;
+  }
+
+  .accent-glow > div:last-child {
+    align-items: stretch !important;
+    padding-inline: 0 !important;
+  }
+
+  .accent-glow > div:last-child > div:first-child {
+    width: 100%;
+  }
+
+  .accent-glow > div:last-child > div:last-child {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: 1fr auto;
+  }
+
+  .accent-glow > div:last-child button:first-child {
+    justify-content: center;
+  }
+
+  .accent-glow + div {
+    padding: 1rem !important;
+    border-radius: 1rem !important;
+    gap: 1rem !important;
+  }
+
+  .accent-glow + div > div:nth-child(4) {
+    max-height: 180px !important;
+  }
+
+  /* Feature cards */
+  section:nth-of-type(2) {
+    padding-block: 1rem !important;
+  }
+
+  section:nth-of-type(2) .grid {
+    gap: 1rem !important;
+  }
+
+  section:nth-of-type(2) .glass-panel {
+    padding: 1rem !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Showcase */
+  section:nth-of-type(3) {
+    gap: 1.25rem !important;
+  }
+
+  section:nth-of-type(3) h2 {
+    font-size: clamp(1.65rem, 8vw, 2rem) !important;
+    line-height: 1.1 !important;
+  }
+
+  section:nth-of-type(3) .grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  section:nth-of-type(3) .glass-panel {
+    padding: 0.85rem !important;
+  }
+
+  /* Lightbox */
+  .fixed.inset-0 img {
+    max-height: 78vh !important;
+  }
+}
+
+/* Very small mobile screens */
+@media (max-width: 420px) {
+  nav > div {
+    gap: 0.75rem !important;
+  }
+
+  #nav-logo {
+    max-width: 52vw;
+  }
+
+  #nav-btn-started {
+    padding-inline: 0.75rem !important;
+  }
+
+  .immersive-bg > main {
+    padding-inline: 0.85rem !important;
+  }
+
+  #welcome-header h1 {
+    font-size: clamp(2rem, 11.5vw, 2.65rem) !important;
+  }
+
+  .glass-panel.text-left.items-start {
+    flex-direction: column !important;
+  }
+
+  .accent-glow {
+    min-height: 300px !important;
+  }
+
+  #main-preview-image {
+    max-height: 42vh !important;
+  }
+
+  .accent-glow > div:last-child > div:last-child {
+    grid-template-columns: 1fr !important;
+  }
+
+  section:nth-of-type(3) .grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Landscape phones / short-height screens */
+@media (max-height: 650px) and (orientation: landscape) {
+  .immersive-bg > main {
+    padding-top: 4.5rem !important;
+  }
+
+  section:first-of-type {
+    min-height: auto !important;
+    margin-top: 1rem !important;
+  }
+
+  #welcome-header h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem) !important;
+  }
+
+  .accent-glow {
+    min-height: 280px !important;
+  }
+
+  #main-preview-image {
+    max-height: 62vh !important;
+  }
+}
+
+/* Accessibility: reduce heavy animations for users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
