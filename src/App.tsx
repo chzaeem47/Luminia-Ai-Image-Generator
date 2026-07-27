@@ -41,7 +41,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
 
   // Default initial image shown on mockup
-  const defaultImage = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1024";
+  const defaultImage = "https://community.softr.io/uploads/db9110/original/2X/7/74e6e7e382d0ff5d7773ca9a87e6f6f8817a68a6.jpeg";
 
   const [currentImage, setCurrentImage] = useState(defaultImage);
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<GenerationHistoryItem | null>(null);
@@ -58,6 +58,7 @@ export default function App() {
   // References for scrolling
   const workspaceRef = useRef<HTMLDivElement>(null);
   const showcaseRef = useRef<HTMLDivElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
 
   // Loading animation message sequence
   const loadingSteps = [
@@ -170,13 +171,31 @@ export default function App() {
     workspaceRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const downloadImage = (url: string, filename: string) => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // Downloads the image to the user's local machine.
+  // Uses a blob fetch instead of a plain <a download> because the
+  // `download` attribute is ignored by browsers for cross-origin URLs
+  // (e.g. images served from a different host than the page).
+  const downloadImage = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Failed to fetch image for download");
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Download failed:", err);
+      // Fallback: if the host blocks cross-origin fetches (CORS),
+      // open the image in a new tab so the user can still save it manually.
+      window.open(url, "_blank");
+    }
   };
 
   const getAspectRatioClasses = (ratio: string) => {
@@ -213,7 +232,7 @@ export default function App() {
           <div className="hidden md:flex items-center gap-8">
             <button
               onClick={() => {
-                showcaseRef.current?.scrollIntoView({ behavior: "smooth" });
+                galleryRef.current?.scrollIntoView({ behavior: "smooth" });
                 setActiveTab("gallery");
               }}
               className={`font-sans transition-colors hover:text-primary ${
@@ -275,19 +294,6 @@ export default function App() {
           </div>
 
           <div className="w-full max-w-4xl flex flex-col gap-8">
-            <div className="glass-panel text-left items-start p-4 flex gap-4 rounded-2xl shadow-xl">
-              <div className="bg-primary/20 p-2 rounded-xl text-primary shrink-0 mt-0.5">
-                <Info className="h-5 w-5" />
-              </div>
-              <div className="flex-grow">
-                <h4 className="font-display font-semibold text-sm text-on-surface flex items-center gap-2">
-                  Ready-To-Use Server-Side Generation
-                </h4>
-                <p className="font-sans text-xs text-on-surface-variant leading-relaxed mt-1">
-                  This applet runs a secure local translation node on port 3000 to keep visual pipelines streamlined and asset configurations completely localized.
-                </p>
-              </div>
-            </div>
 
             {/* Stylized Prompt Form */}
             <form onSubmit={handleGenerate} className="w-full relative group">
@@ -641,6 +647,63 @@ export default function App() {
             ))}
           </div>
         </section>
+
+        {/* Gallery Section — shows every image generated this session */}
+        <section className="py-6 flex flex-col gap-8 text-left scroll-mt-24 border-t border-white/5" ref={galleryRef}>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <h2 className="font-display text-3xl font-black tracking-tight text-on-surface">Your Gallery</h2>
+              <p className="font-sans text-sm text-on-surface-variant">Every image you've generated this session, in one place.</p>
+            </div>
+            {history.length > 0 && (
+              <button onClick={clearHistory} className="text-xs text-red-400 hover:underline shrink-0">
+                Clear all
+              </button>
+            )}
+          </div>
+
+          {history.length === 0 ? (
+            <div className="glass-panel rounded-2xl p-12 text-center text-on-surface-variant text-sm italic">
+              No generations yet — create something in the Workspace above.
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {history.map((item) => (
+                <div
+                  key={item.id}
+                  className="glass-panel rounded-xl overflow-hidden group relative cursor-pointer"
+                  onClick={() => {
+                    setSelectedHistoryItem(item);
+                    setCurrentImage(item.imageUrl);
+                    workspaceRef.current?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
+                  <img
+                    src={item.imageUrl}
+                    alt={item.originalPrompt}
+                    className="w-full aspect-square object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3 gap-2">
+                    <p className="text-[11px] text-white font-semibold line-clamp-2">{item.originalPrompt}</p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-white/60 font-mono">{item.time}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          downloadImage(item.imageUrl, `lumina-ai-${item.id}.png`);
+                        }}
+                        className="p-1.5 bg-white/10 hover:bg-white/20 rounded-full"
+                        title="Download"
+                      >
+                        <Download className="h-3.5 w-3.5 text-white" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       </main>
 
       {/* Fullscreen Zoomed Image Lightbox Portal */}
@@ -656,6 +719,70 @@ export default function App() {
           <p className="text-white/60 text-xs mt-4 font-sans max-w-xl text-center truncate italic">
             {selectedHistoryItem ? selectedHistoryItem.prompt : prompt || "Lumina Studio Engine Masterpiece Output Rendering Grid"}
           </p>
+        </div>
+      )}
+
+      {/* Pricing Modal */}
+      {showPricingModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="glass-panel rounded-2xl max-w-3xl w-full p-8 relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setShowPricingModal(false)}
+              className="absolute top-5 right-5 p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h2 className="font-display text-3xl font-black text-on-surface mb-2">Pricing</h2>
+            <p className="text-on-surface-variant text-sm mb-8">Choose the plan that fits your workflow.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {[
+                { name: "Free", price: "$0", desc: "Try it out", features: ["10 generations / month", "Standard resolution", "Community styles"] },
+                { name: "Pro", price: "$19/mo", desc: "For regular creators", features: ["Unlimited generations", "4K UHD output", "All style presets", "Priority queue"] },
+                { name: "Studio", price: "Contact us", desc: "For teams", features: ["Everything in Pro", "Team seats", "API access", "Dedicated support"] }
+              ].map((tier) => (
+                <div key={tier.name} className="bg-surface-container border border-white/10 rounded-xl p-5 flex flex-col gap-3">
+                  <h3 className="font-display font-bold text-lg text-primary">{tier.name}</h3>
+                  <p className="text-2xl font-black text-on-surface">{tier.price}</p>
+                  <p className="text-xs text-on-surface-variant">{tier.desc}</p>
+                  <ul className="text-xs text-on-surface-variant space-y-1.5 mt-2">
+                    {tier.features.map((f) => (
+                      <li key={f} className="flex items-center gap-1.5">
+                        <Check className="h-3 w-3 text-tertiary shrink-0" /> {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Get Started Modal */}
+      {showGetStartedModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="glass-panel rounded-2xl max-w-md w-full p-8 relative text-center">
+            <button
+              onClick={() => setShowGetStartedModal(false)}
+              className="absolute top-5 right-5 p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h2 className="font-display text-2xl font-black text-on-surface mb-2">Get Started</h2>
+            <p className="text-on-surface-variant text-sm mb-6">
+              No account needed — jump straight into the Workspace and start generating.
+            </p>
+            <button
+              onClick={() => {
+                setShowGetStartedModal(false);
+                workspaceRef.current?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="bg-gradient-to-r from-primary to-secondary text-on-secondary font-bold text-sm px-6 py-3 rounded-xl hover:scale-105 transition-all w-full"
+            >
+              Go to Workspace
+            </button>
+          </div>
         </div>
       )}
     </div>
