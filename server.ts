@@ -2,92 +2,172 @@ import express from "express";
 import path from "path";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
+import { InferenceClient } from "@huggingface/inference";
 
 dotenv.config();
 
+const client = new InferenceClient(process.env.HF_TOKEN);
+
 async function startServer() {
-  const app = express();
-  const PORT = process.env.PORT || 3000;
+    const app = express();
+    const PORT = process.env.PORT || 3000;
 
-  // Middleware
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+    // Middleware
+    app.use(express.json({ limit: "50mb" }));
+    app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // API Endpoint for generating images (Free Tier - Pollinations Engine)
-  app.post("/api/generate", async (req, res) => {
-    try {
-      const { prompt, aspectRatio, style } = req.body;
-      
-      if (!prompt) {
-        return res.status(400).json({ error: "Prompt is required" });
-      }
+    // Image Generation API
+    app.post("/api/generate", async (req, res) => {
+        try {
+            const { prompt, aspectRatio, style } = req.body;
 
-      // 1. Refine prompt based on selected style to achieve premium rendering
-      let finalPrompt = prompt;
-      if (style === "Neon Dystopia") {
-        finalPrompt = `${prompt}, cyberpunk aesthetic, neon dystopia style, rain-slicked obsidian streets reflecting bright neon magenta and cyan, hover vehicles, atmospheric fog, high-contrast, razor-sharp details`;
-      } else if (style === "Cosmic Impasto") {
-        finalPrompt = `${prompt}, oil painting impasto style, thick textured brushstrokes, swirling cosmic nebula, deep black void blended with explosive violet and cyan, classical paint texture, masterpiece`;
-      } else if (style === "Prismatic Void") {
-        finalPrompt = `${prompt}, 3d render, abstract geometric crystalline structure floating in dark void, complex refraction, subsurface scattering, glass-like surfaces, inner glow of blue and purple, high-contrast studio lighting, immaculate obsidian reflections`;
-      } else if (style === "Anime/Digital Art") {
-        finalPrompt = `${prompt}, stunning anime digital art style, vibrant colors, clean outlines, detailed background, dynamic lighting, anime cinematic key visual`;
-      } else if (style === "Watercolor") {
-        finalPrompt = `${prompt}, delicate watercolor painting, soft pigment flows, textured paper, hand-drawn detailing, artistic pastel tones`;
-      } else if (style === "Photorealistic") {
-        finalPrompt = `${prompt}, ultra-realistic, natural lighting, high fidelity, shot on 85mm lens, real scenic view, extremely detailed, depth of field`;
-      }
+            if (!prompt?.trim()) {
+                return res.status(400).json({
+                    error: "Prompt is required",
+                });
+            }
 
-      // URL-encode the final stylized prompt string
-      const encodedPrompt = encodeURIComponent(finalPrompt);
-      
-      // 2. Map structural dimensions based on aspect ratios
-      let width = 1024;
-      let height = 1024;
-      if (aspectRatio === "16:9") { width = 1280; height = 720; }
-      else if (aspectRatio === "9:16") { width = 720; height = 1280; }
-      else if (aspectRatio === "4:3") { width = 1024; height = 768; }
-      else if (aspectRatio === "3:4") { width = 768; height = 1024; }
+            // ===========================
+            // Prompt Enhancement
+            // ===========================
 
-      // 3. Assemble free image generation parameters via Pollinations CDN
-      const generatedImageUrl = `https://image.pollinations.ai/p/${encodedPrompt}?width=${width}&height=${height}&seed=${Math.floor(Math.random() * 1000000)}&nologo=true`;
+            let finalPrompt = prompt.trim();
 
-      // 4. Return structural payload matching frontend interface expectations
-      return res.json({
-        imageUrl: generatedImageUrl,
-        prompt: finalPrompt,
-        originalPrompt: prompt,
-        aspectRatio: aspectRatio,
-        style: style,
-        time: new Date().toISOString()
-      });
+            switch (style) {
+                case "Neon Dystopia":
+                    finalPrompt +=
+                        ", cyberpunk, neon city, rainy streets, cinematic lighting, ultra detailed, masterpiece";
+                    break;
 
-    } catch (error: any) {
-      console.error("Error in /api/generate:", error);
-      return res.status(500).json({
-        error: error?.message || "Internal server error while generating image",
-      });
+                case "Cosmic Impasto":
+                    finalPrompt +=
+                        ", oil painting, impasto, thick brush strokes, masterpiece, artistic";
+                    break;
+
+                case "Prismatic Void":
+                    finalPrompt +=
+                        ", abstract crystal, glass reflections, octane render, unreal engine, ultra detailed";
+                    break;
+
+                case "Anime/Digital Art":
+                    finalPrompt +=
+                        ", anime style, vibrant colors, detailed illustration, key visual";
+                    break;
+
+                case "Watercolor":
+                    finalPrompt +=
+                        ", watercolor painting, textured paper, soft colors";
+                    break;
+
+                case "Photorealistic":
+                    finalPrompt +=
+                        ", photorealistic, DSLR, 85mm lens, ultra realistic, cinematic lighting";
+                    break;
+            }
+
+            // ===========================
+            // Aspect Ratio
+            // ===========================
+
+            let width = 1024;
+            let height = 1024;
+
+            switch (aspectRatio) {
+                case "16:9":
+                    width = 1280;
+                    height = 720;
+                    break;
+
+                case "9:16":
+                    width = 720;
+                    height = 1280;
+                    break;
+
+                case "4:3":
+                    width = 1024;
+                    height = 768;
+                    break;
+
+                case "3:4":
+                    width = 768;
+                    height = 1024;
+                    break;
+            }
+
+            console.log("Generating image...");
+            console.log("Prompt:", finalPrompt);
+
+            // ===========================
+            // Hugging Face Generation
+            // ===========================
+
+            const image = await client.textToImage({
+                model: "black-forest-labs/FLUX.1-schnell",
+                inputs: finalPrompt,
+            });
+
+            const arrayBuffer = await image.arrayBuffer();
+
+            const base64 = Buffer.from(arrayBuffer).toString("base64");
+
+            return res.json({
+                success: true,
+
+                imageUrl: `data:image/png;base64,${base64}`,
+
+                prompt: finalPrompt,
+
+                originalPrompt: prompt,
+
+                aspectRatio,
+
+                style,
+
+                width,
+
+                height,
+
+                generatedAt: new Date().toISOString(),
+            });
+        } catch (error: any) {
+            console.error("Image Generation Error:");
+            console.error(error);
+
+            return res.status(500).json({
+                success: false,
+                error:
+                    error?.message ||
+                    "Failed to generate image.",
+            });
+        }
+    });
+
+    // ===========================
+    // Vite
+    // ===========================
+
+    if (process.env.NODE_ENV !== "production") {
+        const vite = await createViteServer({
+            server: {
+                middlewareMode: true,
+            },
+            appType: "spa",
+        });
+
+        app.use(vite.middlewares);
+    } else {
+        const distPath = path.join(process.cwd(), "dist");
+
+        app.use(express.static(distPath));
+
+        app.get("*", (_, res) => {
+            res.sendFile(path.join(distPath, "index.html"));
+        });
     }
-  });
 
-  // Serve Vite or build static assets
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
+    app.listen(PORT, "0.0.0.0", () => {
+        console.log(`🚀 Luminia server running on port ${PORT}`);
     });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
-  }
-
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT}`);
-  });
 }
 
 startServer();
